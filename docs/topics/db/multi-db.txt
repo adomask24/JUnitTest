@@ -232,6 +232,29 @@ cases, no instance hint will be provided at all. The router checks for
 the existence of an instance hint, and determine if that hint should be
 used to alter routing behavior.
 
+Database selection for related-object access
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Django records the originating database of an instance in
+``instance._state.db``. To maintain this database consistency for
+related-object lookups, routers should utilize the ``instance`` hint provided
+to ``db_for_read()`` and ``db_for_write()``.
+
+Related lookups may be routed incorrectly if the instance hint is ignored
+and a fixed alias is returned. This could result in errors such as
+missing tables in multi-schema setups.
+
+This is an illustration of a router maintaining proper routing behavior:
+
+.. code-block:: python
+
+    class Router:
+        def db_for_read(self, model, **hints):
+            instance = hints.get("instance")
+            if instance is not None:
+                return instance._state.db or "default"
+            return "default"
+
 Using routers
 -------------
 
