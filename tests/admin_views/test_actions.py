@@ -220,7 +220,7 @@ class AdminActionsTest(TestCase):
         # BookAdmin.get_deleted_objects() returns custom text.
         self.assertContains(response, "a deletable object")
 
-    def test_delete_selected_uses_delete_confirmation_max_objects(self):
+    def test_delete_selected_uses_delete_confirmation_max_display(self):
         book = Book.objects.create(name="Test Book")
         data = {
             ACTION_CHECKBOX_NAME: [book.pk],
