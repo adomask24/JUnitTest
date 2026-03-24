@@ -8,7 +8,7 @@ from io import StringIO
 from pathlib import Path
 from smtplib import SMTP, SMTPException
 from ssl import SSLError
-from unittest import mock, skipUnless
+from unittest import SkipTest, mock, skipUnless
 
 from django.core import mail
 from django.core.mail import EmailMessage, send_mail
@@ -129,10 +129,14 @@ class BaseEmailBackendTests(MailTestsMixin):
         self.assertTrue(closed[0])
 
 
-class DummyBackendTests(SimpleTestCase):
-    # Because the dummy backend immediately discards sent messages, the shared
-    # BaseEmailBackendTests aren't applicable. (It's not possible to implement
-    # get_mailbox_content().)
+class DummyBackendTests(BaseEmailBackendTests, SimpleTestCase):
+    email_backend = "django.core.mail.backends.dummy.EmailBackend"
+
+    def get_mailbox_content(self):
+        # Shared tests that examine the content of sent messages are not
+        # meaningful: the dummy backend immediately discards sent messages,
+        # so it's not possible to retrieve them.
+        raise SkipTest("Dummy backend discards sent messages")
 
     def test_send_messages_returns_sent_count(self):
         connection = dummy.EmailBackend()
